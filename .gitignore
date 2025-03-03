@@ -1,3 +1,8 @@
-./backEndServer/target
-./webauthn-frontend/node_modules
-./webauthn-frontend/.next
+# Ignore target directory in backEndServer
+/backEndServer/target/
+
+# Ignore node_modules directory in webauthn-frontend
+/webauthn-frontend/node_modules/
+
+# Ignore .next directory in webauthn-frontend
+/webauthn-frontend/.next/
