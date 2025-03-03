@@ -102,63 +102,42 @@ export async function registerUser(username: string) {
         throw error;
     }
 }
+// app/utils/auth.ts (partial)
 export async function loginUser(username: string) {
-    // Start authentication
     const startResponse = await fetch(`${baseUrl}/login_start/${encodeURIComponent(username)}`, {
         method: 'POST',
         credentials: 'include',
     });
-
-    if (!startResponse.ok) {
-        throw new Error(await startResponse.text());
-    }
+    if (!startResponse.ok) throw new Error(await startResponse.text());
 
     const credentialRequestOptions = await startResponse.json();
-
-    // Convert base64-encoded values to Uint8Array
-    credentialRequestOptions.publicKey.challenge = base64ToUint8Array(
-        credentialRequestOptions.publicKey.challenge
-    );
+    credentialRequestOptions.publicKey.challenge = base64ToUint8Array(credentialRequestOptions.publicKey.challenge);
     credentialRequestOptions.publicKey.allowCredentials?.forEach((cred: any) => {
         cred.id = base64ToUint8Array(cred.id);
     });
 
-    // Get credential
     const assertion = await navigator.credentials.get({
         publicKey: credentialRequestOptions.publicKey,
     }) as PublicKeyCredential;
 
     if (!assertion) throw new Error('Authentication failed');
 
-    // Finish authentication
     const finishResponse = await fetch(`${baseUrl}/login_finish`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             id: assertion.id,
             rawId: uint8ArrayToBase64(new Uint8Array(assertion.rawId)),
             type: assertion.type,
             response: {
-                authenticatorData: uint8ArrayToBase64(
-                    new Uint8Array((assertion.response as AuthenticatorAssertionResponse).authenticatorData)
-                ),
-                clientDataJSON: uint8ArrayToBase64(
-                    new Uint8Array((assertion.response as AuthenticatorAssertionResponse).clientDataJSON)
-                ),
-                signature: uint8ArrayToBase64(
-                    new Uint8Array((assertion.response as AuthenticatorAssertionResponse).signature)
-                ),
-                userHandle: uint8ArrayToBase64(
-                    new Uint8Array((assertion.response as AuthenticatorAssertionResponse).userHandle!)
-                ),
+                authenticatorData: uint8ArrayToBase64(new Uint8Array((assertion.response as AuthenticatorAssertionResponse).authenticatorData)),
+                clientDataJSON: uint8ArrayToBase64(new Uint8Array((assertion.response as AuthenticatorAssertionResponse).clientDataJSON)),
+                signature: uint8ArrayToBase64(new Uint8Array((assertion.response as AuthenticatorAssertionResponse).signature)),
+                userHandle: uint8ArrayToBase64(new Uint8Array((assertion.response as AuthenticatorAssertionResponse).userHandle!)),
             },
         }),
         credentials: 'include',
     });
 
-    if (!finishResponse.ok) {
-        throw new Error(await finishResponse.text());
-    }
+    if (!finishResponse.ok) throw new Error(await finishResponse.text());
 }
