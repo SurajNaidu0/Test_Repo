@@ -1,0 +1,3 @@
+./backEndServer/target
+./webauthn-frontend/node_modules
+./webauthn-frontend/.next
