@@ -16,7 +16,7 @@ impl AppState {
         let db = client.database("auth_db");
 
         let rp_id = "localhost";
-        let rp_origin = Url::parse("http://localhost:8081").expect("Invalid URL"); // Changed to 8081
+        let rp_origin = Url::parse("http://localhost:8081").expect("Invalid URL"); // Matches frontend
         let builder = WebauthnBuilder::new(rp_id, &rp_origin).expect("Invalid configuration");
         let builder = builder.rp_name("Axum Webauthn-rs");
         let webauthn = Arc::new(builder.build().expect("Invalid configuration"));

@@ -1,7 +1,4 @@
-use axum::{
-    http::StatusCode,
-    response::{IntoResponse, Response},
-};
+use axum::{http::StatusCode, response::{IntoResponse, Response}};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -30,7 +27,7 @@ pub enum WebauthnError {
 
 impl IntoResponse for WebauthnError {
     fn into_response(self) -> Response {
-        let (status, body): (StatusCode, String) = match self {
+        let (status, body) = match self {
             WebauthnError::CorruptSession => (StatusCode::BAD_REQUEST, "Corrupt Session".to_string()),
             WebauthnError::UserNotFound => (StatusCode::NOT_FOUND, "User Not Found".to_string()),
             WebauthnError::Unknown => (StatusCode::INTERNAL_SERVER_ERROR, "Unknown Error".to_string()),
@@ -42,7 +39,6 @@ impl IntoResponse for WebauthnError {
             WebauthnError::Unauthenticated => (StatusCode::UNAUTHORIZED, "User not authenticated".to_string()),
             WebauthnError::InvalidInput(msg) => (StatusCode::BAD_REQUEST, msg),
         };
-
         (status, body).into_response()
     }
 }

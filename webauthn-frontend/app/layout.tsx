@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "WebAuthn Poll Application",
-    description: "Secure authentication with WebAuthn",
+    title: "Real-Time Polling App",
+    description: "A secure polling app with Passkey authentication",
 };
 
 export default function RootLayout({
