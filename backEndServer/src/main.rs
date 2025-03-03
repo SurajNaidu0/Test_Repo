@@ -1,11 +1,13 @@
 use axum::{extract::Extension, http::StatusCode, response::IntoResponse, routing::post, Router};
 use std::net::SocketAddr;
-use tower_http::cors::{Any, CorsLayer};
-use axum::http::{HeaderValue, Method, header};
 use tower_sessions::{
     cookie::{time::Duration, SameSite},
     Expiry, MemoryStore, SessionManagerLayer,
 };
+use tower_http::cors::{CorsLayer};
+use http::header::{HeaderValue, CONTENT_TYPE, ACCEPT, ORIGIN, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_REQUEST_HEADERS};
+use http::Method;
+
 mod error;
 use crate::startup::AppState;
 use crate::auth::{start_register, finish_register, start_authentication, finish_authentication};
@@ -17,7 +19,6 @@ mod auth;
 mod startup;
 mod polls;
 
-
 #[tokio::main]
 async fn main() {
     if std::env::var("RUST_LOG").is_err() {
@@ -26,22 +27,15 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let cors = CorsLayer::new()
-        // Allow requests from the Next.js frontend
-        .allow_origin("http://localhost:3000".parse::<HeaderValue>().unwrap())
-        // Allow all methods you need
-        .allow_methods([Method::GET, Method::POST])
-        // Allow content-type header
-        .allow_headers([header::CONTENT_TYPE])
-        // Important for authentication cookies
-        .allow_credentials(true);
-
-    // Create the app
+    // Create the app state
     let app_state = AppState::new().await;
 
     let session_store = MemoryStore::default();
 
-    //build our application with a route
+    // Define the address
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
+
+    // Build our application with routes
     let app = Router::new()
         .route("/register_start/:username", post(start_register))
         .route("/register_finish", post(finish_register))
@@ -52,19 +46,28 @@ async fn main() {
         .layer(
             SessionManagerLayer::new(session_store)
                 .with_name("webauthnrs")
-                // Change these two lines here ↓
-                .with_same_site(SameSite::None) // Changed from Strict to None
-                .with_secure(false)             // Use false for local dev
-                // ↑ Update these settings
-                .with_expiry(Expiry::OnInactivity(Duration::seconds(360))),
+                .with_same_site(SameSite::Strict)
+                .with_secure(false) // TODO: change to true for HTTPS/production
+                .with_expiry(Expiry::OnInactivity(Duration::seconds(360)))
         )
-        .layer(cors) // Add the CORS layer after this
+        .layer(CorsLayer::new()
+            .allow_origin("http://localhost:8081".parse::<HeaderValue>().unwrap()) // Changed to 8081
+            .allow_methods(vec![Method::GET, Method::POST, Method::OPTIONS])
+            .allow_headers(vec![
+                CONTENT_TYPE,
+                ACCEPT,
+                ORIGIN,
+                ACCESS_CONTROL_REQUEST_METHOD,
+                ACCESS_CONTROL_REQUEST_HEADERS,
+            ])
+            .allow_credentials(true))
         .fallback(handler_404);
 
+    let app = Router::new()
+        .merge(app)
+        .nest_service("/", tower_http::services::ServeDir::new("../frontEnd/js"));
 
-
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
-    info!("listening on {addr}");
+    info!("listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr)
         .await

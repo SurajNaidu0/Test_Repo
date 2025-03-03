@@ -1,171 +1,94 @@
-'use client'
+'use client';
 
-import { useState, useRef } from 'react'
-
-declare global {
-    interface Window {
-        Base64: any;
-    }
-}
+import { useState } from 'react';
+import { registerUser, loginUser } from './utils/auth';
 
 export default function Home() {
-    const [flashMessage, setFlashMessage] = useState('')
-    const usernameRef = useRef<HTMLInputElement>(null)
+  const [username, setUsername] = useState('');
+  const [message, setMessage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // This function mimics your original register function
-    const register = async () => {
-        const username = usernameRef.current?.value || '';
-        if (username === "") {
-            alert("Please enter a username");
-            return;
-        }
+  const handleRegister = async () => {
+    try {
+      if (!username) {
+        setMessage('Please enter a username');
+        return;
+      }
 
-        try {
-            // Important: We need to include credentials to ensure cookies are sent and received
-            const response = await fetch('/register_start/' + encodeURIComponent(username), {
-                method: 'POST',
-                credentials: 'include',  // This is critical for cookie handling
-            });
-
-            const credentialCreationOptions = await response.json();
-
-            // Convert base64 encoded data
-            credentialCreationOptions.publicKey.challenge = window.Base64.toUint8Array(credentialCreationOptions.publicKey.challenge);
-            credentialCreationOptions.publicKey.user.id = window.Base64.toUint8Array(credentialCreationOptions.publicKey.user.id);
-
-            if (credentialCreationOptions.publicKey.excludeCredentials) {
-                credentialCreationOptions.publicKey.excludeCredentials.forEach(function (listItem: any) {
-                    listItem.id = window.Base64.toUint8Array(listItem.id);
-                });
-            }
-
-            // Create credentials
-            const credential: any = await navigator.credentials.create({
-                publicKey: credentialCreationOptions.publicKey
-            });
-
-            // Send the response back to the server
-            const finishResponse = await fetch('/register_finish', {
-                method: 'POST',
-                credentials: 'include',  // This is critical for cookie handling
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: credential.id,
-                    rawId: window.Base64.fromUint8Array(new Uint8Array(credential.rawId), true),
-                    type: credential.type,
-                    response: {
-                        attestationObject: window.Base64.fromUint8Array(new Uint8Array(credential.response.attestationObject), true),
-                        clientDataJSON: window.Base64.fromUint8Array(new Uint8Array(credential.response.clientDataJSON), true),
-                    },
-                })
-            });
-
-            if (finishResponse.ok) {
-                setFlashMessage("Successfully registered!");
-            } else {
-                const errorText = await finishResponse.text();
-                setFlashMessage(`Error whilst registering: ${errorText}`);
-            }
-        } catch (error) {
-            console.error("Registration error:", error);
-            setFlashMessage(`Error whilst registering: ${error.message}`);
-        }
+      await registerUser(username);
+      setMessage('Successfully registered!');
+    } catch (error) {
+      setMessage(`Error whilst registering: ${error.message}`);
     }
+  };
 
-    // This function mimics your original login function
-    const login = async () => {
-        const username = usernameRef.current?.value || '';
-        if (username === "") {
-            alert("Please enter a username");
-            return;
-        }
+  const handleLogin = async () => {
+    try {
+      if (!username) {
+        setMessage('Please enter a username');
+        return;
+      }
 
-        try {
-            const response = await fetch('/login_start/' + encodeURIComponent(username), {
-                method: 'POST',
-                credentials: 'include',  // This is critical for cookie handling
-            });
-
-            const credentialRequestOptions = await response.json();
-
-            // Convert base64 encoded data
-            credentialRequestOptions.publicKey.challenge = window.Base64.toUint8Array(credentialRequestOptions.publicKey.challenge);
-
-            if (credentialRequestOptions.publicKey.allowCredentials) {
-                credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem: any) {
-                    listItem.id = window.Base64.toUint8Array(listItem.id);
-                });
-            }
-
-            // Get assertion
-            const assertion: any = await navigator.credentials.get({
-                publicKey: credentialRequestOptions.publicKey
-            });
-
-            // Send the response back to the server
-            const finishResponse = await fetch('/login_finish', {
-                method: 'POST',
-                credentials: 'include',  // This is critical for cookie handling
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    id: assertion.id,
-                    rawId: window.Base64.fromUint8Array(new Uint8Array(assertion.rawId), true),
-                    type: assertion.type,
-                    response: {
-                        authenticatorData: window.Base64.fromUint8Array(new Uint8Array(assertion.response.authenticatorData), true),
-                        clientDataJSON: window.Base64.fromUint8Array(new Uint8Array(assertion.response.clientDataJSON), true),
-                        signature: window.Base64.fromUint8Array(new Uint8Array(assertion.response.signature), true),
-                        userHandle: assertion.response.userHandle ?
-                            window.Base64.fromUint8Array(new Uint8Array(assertion.response.userHandle), true) : ""
-                    },
-                }),
-            });
-
-            if (finishResponse.ok) {
-                setFlashMessage("Successfully logged in!");
-            } else {
-                const errorText = await finishResponse.text();
-                setFlashMessage(`Error whilst logging in: ${errorText}`);
-            }
-        } catch (error) {
-            console.error("Login error:", error);
-            setFlashMessage(`Error whilst logging in: ${error.message}`);
-        }
+      await loginUser(username);
+      setMessage('Successfully logged in!');
+      setIsLoggedIn(true);
+    } catch (error) {
+      setMessage(`Error whilst logging in: ${error.message}`);
     }
+  };
 
-    return (
-        <main className="p-4">
-            <p className="mb-4">Welcome to the WebAuthn Server!</p>
+  return (
+      <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+          <h1 className="text-2xl font-bold mb-6 text-center">WebAuthn Poll Application</h1>
 
-            <div className="mb-4">
-                <input
-                    type="text"
-                    id="username"
-                    ref={usernameRef}
-                    placeholder="Enter your username here"
-                    className="border px-2 py-1 mr-2"
-                />
-                <button
-                    onClick={register}
-                    className="border px-2 py-1 mr-2"
-                >
-                    Register
-                </button>
-                <button
-                    onClick={login}
-                    className="border px-2 py-1"
-                >
-                    Login
-                </button>
-            </div>
+          {!isLoggedIn ? (
+              <div className="space-y-6">
+                <p className="text-center text-gray-600">Register or login to create polls</p>
 
-            <div>
-                <p id="flash_message">{flashMessage}</p>
-            </div>
-        </main>
-    )
+                <div className="space-y-4">
+                  <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your username here"
+                      className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <div className="flex gap-4 justify-center">
+                    <button
+                        onClick={handleRegister}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Register
+                    </button>
+                    <button
+                        onClick={handleLogin}
+                        className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+                    >
+                      Login
+                    </button>
+                  </div>
+                </div>
+              </div>
+          ) : (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold">Welcome, {username}!</h2>
+                <p className="text-gray-600">You can now create polls</p>
+                {/* Add poll creation form here later */}
+              </div>
+          )}
+
+          {message && (
+              <p
+                  className={`mt-4 p-2 rounded-md text-center ${
+                      message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                  }`}
+              >
+                {message}
+              </p>
+          )}
+        </div>
+      </main>
+  );
 }
