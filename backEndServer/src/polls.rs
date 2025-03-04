@@ -4,7 +4,7 @@ use axum::{
     response::{IntoResponse, Sse},
     Router, routing::{get, post},
 };
-use futures::TryStreamExt; // Add this import at the top
+use futures::TryStreamExt;
 use mongodb::bson::{doc, oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
@@ -12,9 +12,8 @@ use std::time::Duration;
 use async_stream::stream;
 use chrono::Utc;
 use serde_json;
-use futures::stream::StreamExt;
 
-use crate::auth::is_authenticated;
+use crate::auth::{is_authenticated, User}; // Import User from auth module
 use crate::error::WebauthnError;
 use crate::startup::AppState;
 
@@ -64,6 +63,7 @@ pub struct PollResponse {
     pub title: String,
     pub options: Vec<PollOption>,
     pub creator_id: String,
+    pub creator_username: String, // Included as per previous update
     pub created_at: String,
     pub is_closed: bool,
     pub total_votes: i32,
@@ -96,12 +96,13 @@ pub async fn get_polls(
     session: Session,
     Query(params): Query<PollQueryParams>,
 ) -> Result<impl IntoResponse, WebauthnError> {
-    let user_id = is_authenticated(&session).await?;
     let poll_collection = app_state.db.collection::<Poll>("polls");
+    let user_collection = app_state.db.collection::<User>("users");
 
     let mut filter = doc! {};
     if let Some(creator) = params.creator {
         if creator == "me" {
+            let user_id = is_authenticated(&session).await?;
             filter.insert("creator_id", user_id);
         } else {
             filter.insert("creator_id", ObjectId::parse_str(creator)
@@ -115,20 +116,24 @@ pub async fn get_polls(
     let mut cursor = poll_collection.find(filter, None).await
         .map_err(|e| { error!("Failed to fetch polls: {:?}", e); WebauthnError::DatabaseError })?;
 
-    let polls = cursor.try_collect::<Vec<Poll>>().await
-        .map_err(|e| { error!("Failed to collect polls: {:?}", e); WebauthnError::DatabaseError })?;
+    let mut poll_responses = Vec::new();
+    while let Some(poll) = cursor.try_next().await
+        .map_err(|e| { error!("Failed to collect polls: {:?}", e); WebauthnError::DatabaseError })? {
+        let creator = user_collection.find_one(doc! { "_id": &poll.creator_id }, None).await
+            .map_err(|e| { error!("Failed to fetch user: {:?}", e); WebauthnError::DatabaseError })?
+            .ok_or_else(|| { error!("Creator not found for poll: {:?}", poll.id); WebauthnError::UserNotFound })?;
 
-    let poll_responses: Vec<PollResponse> = polls.into_iter().map(|poll| {
-        PollResponse {
+        poll_responses.push(PollResponse {
             id: poll.id.unwrap().to_string(),
             title: poll.title,
             options: poll.options,
             creator_id: poll.creator_id.to_string(),
+            creator_username: creator.username, // Now included
             created_at: poll.created_at.to_string(),
             is_closed: poll.is_closed,
             total_votes: poll.total_votes,
-        }
-    }).collect();
+        });
+    }
 
     Ok(Json(poll_responses))
 }
@@ -188,15 +193,22 @@ pub async fn get_poll(
 ) -> Result<impl IntoResponse, WebauthnError> {
     let poll_id = ObjectId::parse_str(&poll_id).map_err(|_| WebauthnError::InvalidInput("Invalid poll ID".into()))?;
     let poll_collection = app_state.db.collection::<Poll>("polls");
+    let user_collection = app_state.db.collection::<User>("users");
+
     let poll = poll_collection.find_one(doc! { "_id": poll_id }, None).await
         .map_err(|_| WebauthnError::DatabaseError)?
         .ok_or(WebauthnError::UserNotFound)?;
+
+    let creator = user_collection.find_one(doc! { "_id": &poll.creator_id }, None).await
+        .map_err(|e| { error!("Failed to fetch user: {:?}", e); WebauthnError::DatabaseError })?
+        .ok_or_else(|| { error!("Creator not found for poll: {:?}", poll.id); WebauthnError::UserNotFound })?;
 
     Ok(Json(PollResponse {
         id: poll.id.unwrap().to_string(),
         title: poll.title,
         options: poll.options,
         creator_id: poll.creator_id.to_string(),
+        creator_username: creator.username,
         created_at: poll.created_at.to_string(),
         is_closed: poll.is_closed,
         total_votes: poll.total_votes,
