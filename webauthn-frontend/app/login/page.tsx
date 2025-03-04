@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { loginUser } from '../utils/auth';
 import { useRouter } from 'next/navigation';
-import { uniswapStyles } from '../uniswapStyles';
 import Link from 'next/link';
 
 export default function Login() {
@@ -39,6 +38,40 @@ export default function Login() {
         document.head.appendChild(styleTag);
         return () => document.head.removeChild(styleTag);
     }, []);
+
+    // Header styles
+    const header = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 24px',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+        position: 'sticky' as const,
+        top: 0,
+        zIndex: 1000,
+    };
+
+    const logoContainer = {
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+    };
+
+    const logoText = {
+        fontWeight: '700',
+        fontSize: '22px',
+        letterSpacing: '-0.5px',
+    };
+
+    const logoTextPurple = {
+        color: '#8b5cf6',
+    };
+
+    const logoTextPink = {
+        color: '#ec4899',
+    };
 
     // Enhanced styles
     const loginContainer = {
@@ -128,181 +161,18 @@ export default function Login() {
         textAlign: 'center' as const,
     };
 
-    // Uniswap-inspired navbar styles
-    const navbar = {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '16px 16px',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
-        position: 'sticky' as const,
-        top: 0,
-        zIndex: 1000,
-    };
-
-    const navLeft = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '24px',
-    };
-
-    const navRight = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-    };
-
-    const logoContainer = {
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-    };
-
-    const logoText = {
-        fontWeight: '700',
-        fontSize: '22px',
-        letterSpacing: '-0.5px',
-    };
-
-    const logoTextPurple = {
-        color: '#8b5cf6',
-    };
-
-    const logoTextPink = {
-        color: '#ec4899',
-    };
-
-    const navTabs = {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-    };
-
-    const navTab = {
-        padding: '8px 12px',
-        fontWeight: '500',
-        fontSize: '16px',
-        color: '#374151',
-        textDecoration: 'none',
-        borderRadius: '12px',
-        transition: 'all 0.2s ease',
-    };
-
-    const navTabHover = {
-        backgroundColor: 'rgba(243, 244, 246, 0.8)',
-        color: '#111827',
-    };
-
-    const searchContainer = {
-        display: 'flex',
-        alignItems: 'center',
-        background: 'rgba(243, 244, 246, 0.8)',
-        borderRadius: '12px',
-        padding: '8px 16px',
-        width: '240px',
-        border: '1px solid transparent',
-        transition: 'all 0.2s ease',
-    };
-
-    const searchInput = {
-        border: 'none',
-        background: 'transparent',
-        width: '100%',
-        outline: 'none',
-        fontSize: '14px',
-        color: '#374151',
-    };
-
-    const connectButton = {
-        background: 'linear-gradient(90deg, #fc72ff, #8b5cf6)',
-        color: 'white',
-        fontWeight: '600',
-        padding: '8px 16px',
-        borderRadius: '12px',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: '14px',
-        transition: 'all 0.2s ease',
-    };
-
-    const getAppButton = {
-        color: '#111827',
-        fontWeight: '500',
-        padding: '8px 16px',
-        borderRadius: '12px',
-        background: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: '14px',
-        transition: 'all 0.2s ease',
-    };
-
     return (
         <div style={loginContainer}>
-            <nav style={navbar}>
-                <div style={navLeft}>
-                    <Link href="/" style={{ textDecoration: 'none' }}>
-                        <div style={logoContainer}>
-                            <div style={logoText}>
-                                <span style={logoTextPurple}>Poll</span>
-                                <span style={logoTextPink}>swap</span>
-                            </div>
+            <header style={header}>
+                <Link href="/" style={{ textDecoration: 'none' }}>
+                    <div style={logoContainer}>
+                        <div style={logoText}>
+                            <span style={logoTextPurple}>Poll</span>
+                            <span style={logoTextPink}>swap</span>
                         </div>
-                    </Link>
-                    <div style={navTabs}>
-                        <Link href="/"
-                              style={navTab}
-                              onMouseOver={(e) => Object.assign(e.currentTarget.style, navTabHover)}
-                              onMouseOut={(e) => {
-                                  e.currentTarget.style.backgroundColor = '';
-                                  e.currentTarget.style.color = '#374151';
-                              }}
-                        >
-                            Explore
-                        </Link>
-                        <Link href="/polls/new"
-                              style={navTab}
-                              onMouseOver={(e) => Object.assign(e.currentTarget.style, navTabHover)}
-                              onMouseOut={(e) => {
-                                  e.currentTarget.style.backgroundColor = '';
-                                  e.currentTarget.style.color = '#374151';
-                              }}
-                        >
-                            Create
-                        </Link>
-                        <Link href="/polls/manage"
-                              style={navTab}
-                              onMouseOver={(e) => Object.assign(e.currentTarget.style, navTabHover)}
-                              onMouseOut={(e) => {
-                                  e.currentTarget.style.backgroundColor = '';
-                                  e.currentTarget.style.color = '#374151';
-                              }}
-                        >
-                            Manage
-                        </Link>
                     </div>
-                </div>
-
-                <div style={navRight}>
-                    <div style={searchContainer}>
-                        <input
-                            type="text"
-                            placeholder="Search polls"
-                            style={searchInput}
-                        />
-                    </div>
-                    <button style={getAppButton}>
-                        Get the app
-                    </button>
-                    <Link href="/login" style={{ textDecoration: 'none' }}>
-                        <button style={connectButton}>
-                            Connect
-                        </button>
-                    </Link>
-                </div>
-            </nav>
+                </Link>
+            </header>
 
             <main style={loginMain}>
                 <div style={loginCard}>

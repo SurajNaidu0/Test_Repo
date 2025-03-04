@@ -1,4 +1,3 @@
-// webauthn-frontend/app/polls/new/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -28,6 +27,24 @@ export default function NewPoll() {
 
         verifyAuth();
     }, [router]);
+
+    // Animation keyframes
+    useEffect(() => {
+        const styleTag = document.createElement('style');
+        styleTag.innerHTML = `
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pulseGlow {
+        0% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.2); }
+        50% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+        100% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.2); }
+      }
+    `;
+        document.head.appendChild(styleTag);
+        return () => document.head.removeChild(styleTag);
+    }, []);
 
     // Validate form data
     const validateForm = () => {
@@ -141,66 +158,368 @@ export default function NewPoll() {
         }
     };
 
+    // Styles
+    const container = {
+        display: 'flex',
+        flexDirection: 'column' as const,
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #f8fafc, #e5e7eb)',
+    };
+
+    const header = {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 24px',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+        position: 'sticky' as const,
+        top: 0,
+        zIndex: 1000,
+    };
+
+    const logoContainer = {
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'pointer',
+    };
+
+    const logoText = {
+        fontWeight: '700',
+        fontSize: '22px',
+        letterSpacing: '-0.5px',
+    };
+
+    const logoTextPurple = {
+        color: '#8b5cf6',
+    };
+
+    const logoTextPink = {
+        color: '#ec4899',
+    };
+
+    const mainContent = {
+        flex: '1 1 auto',
+        padding: '2rem',
+        display: 'flex',
+        justifyContent: 'center',
+    };
+
+    const formCard = {
+        background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+        padding: '2.5rem',
+        borderRadius: '1.5rem',
+        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.1)',
+        width: '100%',
+        maxWidth: '42rem',
+        border: '1px solid rgba(139, 92, 246, 0.1)',
+        animation: 'fadeInUp 0.5s ease-out',
+        margin: '2rem 0',
+    };
+
+    const formTitle = {
+        fontSize: '2rem',
+        fontWeight: '800',
+        marginBottom: '2rem',
+        background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        color: 'transparent',
+    };
+
+    const formHeader = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem',
+    };
+
+    const backLink = {
+        color: '#8b5cf6',
+        textDecoration: 'none',
+        fontWeight: '500',
+        display: 'flex',
+        alignItems: 'center',
+    };
+
+    const formGroup = {
+        marginBottom: '1.5rem',
+    };
+
+    const formLabel = {
+        display: 'block',
+        fontSize: '0.875rem',
+        fontWeight: '600',
+        color: '#4b5563',
+        marginBottom: '0.5rem',
+    };
+
+    const inputField = {
+        width: '100%',
+        padding: '1rem',
+        border: '1px solid rgba(139, 92, 246, 0.2)',
+        borderRadius: '0.75rem',
+        fontSize: '1rem',
+        outline: 'none',
+        transition: 'all 0.3s ease',
+        background: 'rgba(255, 255, 255, 0.9)',
+    };
+
+    const inputError = {
+        border: '1px solid #ef4444',
+    };
+
+    const errorText = {
+        color: '#ef4444',
+        fontSize: '0.875rem',
+        marginTop: '0.5rem',
+    };
+
+    const optionContainer = {
+        display: 'flex',
+        marginBottom: '0.75rem',
+    };
+
+    const optionInput = {
+        flexGrow: 1,
+        position: 'relative' as const,
+    };
+
+    const optionPrefix = {
+        position: 'absolute' as const,
+        left: '0.75rem',
+        top: '1rem',
+        color: '#6b7280',
+    };
+
+    const removeButton = {
+        marginLeft: '0.5rem',
+        padding: '0.5rem',
+        color: '#ef4444',
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        fontSize: '1.25rem',
+        borderRadius: '0.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.2s ease',
+    };
+
+    const addButton = {
+        display: 'flex',
+        alignItems: 'center',
+        color: '#8b5cf6',
+        background: 'none',
+        border: 'none',
+        padding: '0.5rem 0',
+        cursor: 'pointer',
+        fontSize: '0.875rem',
+        fontWeight: '600',
+        marginTop: '0.5rem',
+    };
+
+    const submitButton = {
+        padding: '1rem 1.5rem',
+        background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '9999px',
+        fontSize: '1rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)',
+        transition: 'all 0.3s ease',
+    };
+
+    const disabledButton = {
+        background: '#d1d5db',
+        cursor: 'not-allowed',
+        boxShadow: 'none',
+    };
+
+    const messageBox = (isError: boolean) => ({
+        marginTop: '1.5rem',
+        padding: '1rem',
+        borderRadius: '0.75rem',
+        background: isError ? 'rgba(254, 202, 202, 0.5)' : 'rgba(187, 247, 208, 0.5)',
+        color: isError ? '#b91c1c' : '#047857',
+        border: `1px solid ${isError ? 'rgba(248, 113, 113, 0.3)' : 'rgba(74, 222, 128, 0.3)'}`,
+        fontSize: '0.875rem',
+        fontWeight: '500',
+    });
+
+    const formActions = {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginTop: '2rem',
+    };
+
+    const authRequired = {
+        minHeight: '70vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+    };
+
+    const authCard = {
+        background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+        padding: '2.5rem',
+        borderRadius: '1.5rem',
+        boxShadow: '0 8px 32px rgba(139, 92, 246, 0.1)',
+        width: '100%',
+        maxWidth: '28rem',
+        border: '1px solid rgba(139, 92, 246, 0.1)',
+        textAlign: 'center' as const,
+        animation: 'fadeInUp 0.5s ease-out',
+    };
+
+    const authTitle = {
+        fontSize: '1.5rem',
+        fontWeight: '700',
+        marginBottom: '1rem',
+        color: '#1f2937',
+    };
+
+    const authMessage = {
+        marginBottom: '1.5rem',
+        color: '#4b5563',
+    };
+
+    const authButtonsContainer = {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '1rem',
+    };
+
+    const loginButton = {
+        padding: '0.75rem 1.5rem',
+        background: 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '9999px',
+        fontSize: '0.875rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        display: 'inline-block',
+    };
+
+    const homeButton = {
+        padding: '0.75rem 1.5rem',
+        background: '#e5e7eb',
+        color: '#4b5563',
+        border: 'none',
+        borderRadius: '9999px',
+        fontSize: '0.875rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        display: 'inline-block',
+    };
+
+    const footer = {
+        padding: '16px',
+        textAlign: 'center' as const,
+        borderTop: '1px solid rgba(0, 0, 0, 0.05)',
+        background: 'rgba(255, 255, 255, 0.8)',
+    };
+
     // If not logged in, show a message
     if (!isLoggedIn) {
         return (
-            <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-                    <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
-                    <p className="mb-6">You need to be logged in to create a poll.</p>
-                    <div className="flex justify-center space-x-4">
-                        <Link href="/login" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                            Login
-                        </Link>
-                        <Link href="/" className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
-                            Back to Home
-                        </Link>
+            <div style={container}>
+                <header style={header}>
+                    <Link href="/" style={{ textDecoration: 'none' }}>
+                        <div style={logoContainer}>
+                            <div style={logoText}>
+                                <span style={logoTextPurple}>Poll</span>
+                                <span style={logoTextPink}>swap</span>
+                            </div>
+                        </div>
+                    </Link>
+                </header>
+
+                <div style={authRequired}>
+                    <div style={authCard}>
+                        <h1 style={authTitle}>Authentication Required</h1>
+                        <p style={authMessage}>You need to be logged in to create a poll.</p>
+                        <div style={authButtonsContainer}>
+                            <Link href="/login" style={loginButton}>
+                                Login
+                            </Link>
+                            <Link href="/" style={homeButton}>
+                                Back to Home
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </main>
+
+                <footer style={footer}>
+                    <div style={{ color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>
+                        © 2025 Pollswap • Built with ❤️
+                    </div>
+                </footer>
+            </div>
         );
     }
 
     return (
-        <main className="min-h-screen bg-gray-100 p-4">
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Create New Poll</h1>
-                    <Link href="/" className="text-blue-500 hover:underline">
-                        Back to Home
-                    </Link>
-                </div>
+        <div style={container}>
+            <header style={header}>
+                <Link href="/" style={{ textDecoration: 'none' }}>
+                    <div style={logoContainer}>
+                        <div style={logoText}>
+                            <span style={logoTextPurple}>Poll</span>
+                            <span style={logoTextPink}>swap</span>
+                        </div>
+                    </div>
+                </Link>
+            </header>
 
-                <form onSubmit={handleCreatePoll}>
-                    <div className="mb-6">
-                        <label htmlFor="poll-title" className="block text-sm font-medium text-gray-700 mb-1">
-                            Poll Title*
-                        </label>
-                        <input
-                            id="poll-title"
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Enter a question or topic for your poll"
-                            className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-300 focus:outline-none
-                                ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
-                            disabled={isSubmitting}
-                        />
-                        {errors.title && (
-                            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                        )}
+            <main style={mainContent}>
+                <div style={formCard}>
+                    <div style={formHeader}>
+                        <h1 style={formTitle}>Create New Poll</h1>
+                        <Link href="/" style={backLink}>
+                            Back to Home
+                        </Link>
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Poll Options* (minimum 2)
-                        </label>
+                    <form onSubmit={handleCreatePoll}>
+                        <div style={formGroup}>
+                            <label htmlFor="poll-title" style={formLabel}>
+                                Poll Title*
+                            </label>
+                            <input
+                                id="poll-title"
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Enter a question or topic for your poll"
+                                style={{
+                                    ...inputField,
+                                    ...(errors.title ? inputError : {})
+                                }}
+                                disabled={isSubmitting}
+                            />
+                            {errors.title && (
+                                <p style={errorText}>{errors.title}</p>
+                            )}
+                        </div>
 
-                        {options.map((option, index) => (
-                            <div key={index} className="flex mb-2">
-                                <div className="flex-grow">
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-3 text-gray-500">
+                        <div style={formGroup}>
+                            <label style={formLabel}>
+                                Poll Options* (minimum 2)
+                            </label>
+
+                            {options.map((option, index) => (
+                                <div key={index} style={optionContainer}>
+                                    <div style={optionInput}>
+                                        <span style={optionPrefix}>
                                             {index + 1}.
                                         </span>
                                         <input
@@ -208,64 +527,72 @@ export default function NewPoll() {
                                             value={option}
                                             onChange={(e) => updateOption(index, e.target.value)}
                                             placeholder={`Option ${index + 1}`}
-                                            className={`w-full p-3 pl-8 border rounded-md focus:ring-2 focus:ring-blue-300 focus:outline-none
-                                                ${errors.options && errors.options[index] ? 'border-red-500' : 'border-gray-300'}`}
+                                            style={{
+                                                ...inputField,
+                                                paddingLeft: '2rem',
+                                                ...(errors.options && errors.options[index] ? inputError : {})
+                                            }}
                                             disabled={isSubmitting}
                                         />
+                                        {errors.options && errors.options[index] && (
+                                            <p style={errorText}>{errors.options[index]}</p>
+                                        )}
                                     </div>
-                                    {errors.options && errors.options[index] && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.options[index]}</p>
-                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => removeOption(index)}
+                                        style={removeButton}
+                                        disabled={options.length <= 2 || isSubmitting}
+                                        aria-label="Remove option"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => removeOption(index)}
-                                    className="ml-2 p-3 text-red-500 hover:text-red-700 disabled:text-gray-400"
-                                    disabled={options.length <= 2 || isSubmitting}
-                                    aria-label="Remove option"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
+                            ))}
 
-                        {errors.options && !Array.isArray(errors.options) && (
-                            <p className="mt-1 text-sm text-red-600">{errors.options}</p>
-                        )}
+                            {errors.options && !Array.isArray(errors.options) && (
+                                <p style={errorText}>{errors.options}</p>
+                            )}
 
-                        <button
-                            type="button"
-                            onClick={addOption}
-                            className="mt-2 flex items-center text-blue-500 hover:text-blue-700 disabled:text-gray-400"
-                            disabled={isSubmitting}
-                        >
-                            <span className="text-xl mr-1">+</span> Add Another Option
-                        </button>
-                    </div>
+                            <button
+                                type="button"
+                                onClick={addOption}
+                                style={addButton}
+                                disabled={isSubmitting}
+                            >
+                                <span style={{ fontSize: '1.5rem', marginRight: '0.25rem' }}>+</span> Add Another Option
+                            </button>
+                        </div>
 
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            className={`px-6 py-3 rounded-md text-white font-medium
-                                ${isSubmitting
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600'}`}
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? 'Creating Poll...' : 'Create Poll'}
-                        </button>
-                    </div>
-                </form>
+                        <div style={formActions}>
+                            <button
+                                type="submit"
+                                style={{
+                                    ...submitButton,
+                                    ...(isSubmitting ? disabledButton : {})
+                                }}
+                                disabled={isSubmitting}
+                                onMouseOver={(e) => !isSubmitting && (e.currentTarget.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.5)')}
+                                onMouseOut={(e) => !isSubmitting && (e.currentTarget.style.boxShadow = '0 4px 14px rgba(139, 92, 246, 0.3)')}
+                            >
+                                {isSubmitting ? 'Creating Poll...' : 'Create Poll'}
+                            </button>
+                        </div>
+                    </form>
 
-                {message && (
-                    <div className={`mt-4 p-4 rounded-md ${message.includes('Error')
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-green-100 text-green-700'}`}
-                    >
-                        {message}
-                    </div>
-                )}
-            </div>
-        </main>
+                    {message && (
+                        <div style={messageBox(message.includes('Error'))}>
+                            {message}
+                        </div>
+                    )}
+                </div>
+            </main>
+
+            <footer style={footer}>
+                <div style={{ color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>
+                    © 2025 Pollswap • Built with ❤️
+                </div>
+            </footer>
+        </div>
     );
 }
